@@ -105,12 +105,20 @@ var allFunctions = function () {
     request.open("GET", requestUrl, true);
     request.onload = function () {
       if (this.status >= 200 && this.status < 400) {
-        var textarea = document.createElement("textarea");
-        textarea.rows = "20";
-        textarea.cols = "60";
-        textarea.style.border = "solid 1px black";
-        textarea.textContent = this.responseText;
-        document.querySelector("main .forDebug2").append(textarea);
+        // New code
+        var textarea = document.querySelector("main .forDebug2 textarea");
+        if (textarea) {
+          textarea.textContent = this.responseText;
+        } else {
+          // Old code
+          textarea = document.createElement("textarea");
+          textarea.rows = "20";
+          textarea.cols = "60";
+          textarea.style.border = "solid 1px black";
+          textarea.textContent = this.responseText;
+          document.querySelector("main .forDebug2").append(textarea);
+        }
+
         var xmlData = this.responseXML;
         handleXMLResponse(xmlData);
       } else {
@@ -127,6 +135,9 @@ var allFunctions = function () {
   };
 
   var handleXMLResponse = function (data) {
+    // New code
+    clearDiv("#xmlDataAsTable *");
+
     var feature = data.getElementsByTagName("intersection")[0];
     if (typeof feature !== "undefined" && feature.childNodes.length > 0) {
       var headerRow = document.createElement("tr");
@@ -155,11 +166,18 @@ var allFunctions = function () {
   };
 
   var getAndDisplayMap = function (wms_request) {
-    var img = document.createElement("img");
-    img.style.display = "none";
-    img.src = wms_request;
-    document.querySelector("main .mapDiv").append(img);
-    img.style.display = "block";
+    // New code
+    var img = document.querySelector("main .mapDiv img");
+    if (img) {
+      img.src = wms_request;
+    } else {
+      // Old code
+      img = document.createElement("img");
+      img.style.display = "none";
+      img.src = wms_request;
+      document.querySelector("main .mapDiv").append(img);
+      img.style.display = "block";
+    }
   };
 
   var constructWMSrequest = function (
@@ -227,10 +245,16 @@ var allFunctions = function () {
     if (document.querySelector("section#geonames input").value !== "") {
       postalcodeInput = document.querySelector("#postal").value;
       countryInput = document.querySelector("#countrySelect").value;
-      var rows = document.querySelectorAll("#resultsTable tr");
-      for (var i = 1; i < rows.length; i++) {
-        rows[i].remove();
-      }
+
+      // Old code
+      // var rows = document.querySelectorAll("#resultsTable tr");
+      // for (var i = 1; i < rows.length; i++) {
+      //   rows[i].remove();
+      // }
+
+      // New code
+      clearAll();
+
       document.querySelector("main .messages").textContent = "";
       document.querySelector("main .forDebug").textContent = "";
 
@@ -238,6 +262,22 @@ var allFunctions = function () {
     } else {
       alert("Enter (first part of) postal code");
     }
+  };
+
+  const clearDiv = (selectors) => {
+    var elements = document.querySelectorAll(selectors);
+    if (elements) {
+      elements.forEach((child) => {
+        child.remove();
+      })
+    }
+  };
+
+  const clearAll = () => {
+    clearDiv("#resultsTable *");
+    clearDiv(".mapDiv *");
+    clearDiv(".forDebug2 *");
+    clearDiv("#xmlDataAsTable *");
   };
 
   document.body.addEventListener("click", function (event) {
@@ -297,6 +337,6 @@ var allFunctions = function () {
       requestWMSmap(lat, lng);
     }
   });
+};
 
 document.addEventListener("DOMContentLoaded", allFunctions);
-
